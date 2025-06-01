@@ -1,73 +1,140 @@
-# Welcome to your Lovable project
 
-## Project info
+# 📚 book_store_api_ai
 
-**URL**: https://lovable.dev/projects/71aaa9f3-c071-41a7-9caa-6e104de096d7
+واجهة API ذكية تستخدم OpenRouter للتفاعل مع نماذج الذكاء الاصطناعي مثل GPT وClaude وMistral، وتُستخدم في تطبيقات مثل التوصية بالكتب، مراجعة المحتوى، وخدمة العملاء.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🚀 نظرة عامة
 
-**Use Lovable**
+تم إعداد هذا المشروع باستخدام [OpenRouter](https://openrouter.ai)، وهو وسيط API يتيح لك التفاعل مع مجموعة واسعة من نماذج الذكاء الاصطناعي عبر نقطة نهاية واحدة، باستخدام المفتاح الخاص التالي:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/71aaa9f3-c071-41a7-9caa-6e104de096d7) and start prompting.
+```
+API KEY: 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
+```
 
-Changes made via Lovable will be committed automatically to this repo.
+> ⚠️ **تحذير**: لا تشارك مفتاح API في بيئات عامة أو GitHub. استخدمه فقط في بيئة تطوير آمنة.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## ⚙️ الإعداد السريع
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### ✅ نقطة النهاية:
+```
+POST https://openrouter.ai/api/v1/chat/completions
+```
 
-Follow these steps:
+### ✅ رؤوس الطلب (Headers):
 
+```json
+{
+  "Authorization": "Bearer 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",
+  "Content-Type": "application/json",
+  "HTTP-Referer": "book-store.ai",  
+  "X-Title": "book_store_api_ai"
+}
+```
+
+---
+
+## 📤 الجسم (Body):
+
+```json
+{
+  "model": "openai/gpt-3.5-turbo",
+  "messages": [
+    { "role": "system", "content": "أنت مساعد مخصص لمكتبة كتب ذكية" },
+    { "role": "user", "content": "اقترح لي كتابًا في تطوير الذات" }
+  ]
+}
+```
+
+---
+
+## 🧪 مثال عملي بـ `curl`:
+
+```bash
+curl https://openrouter.ai/api/v1/chat/completions \
+  -H "Authorization: Bearer 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" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-3.5-turbo",
+    "messages": [
+      { "role": "user", "content": "ما هو أفضل كتاب عن التسويق؟" }
+    ]
+  }'
+```
+
+---
+
+## 🔍 أمثلة على الموديلات المدعومة
+
+| النموذج         | المعرف                      |
+| --------------- | --------------------------- |
+| GPT-3.5 Turbo   | `openai/gpt-3.5-turbo`      |
+| GPT-4           | `openai/gpt-4`              |
+| Claude 3 Sonnet | `anthropic/claude-3-sonnet` |
+| Mistral Mixtral | `mistralai/mixtral-8x7b`    |
+| Command R+      | `cohere/command-r-plus`     |
+
+---
+
+## ✅ حالات استخدام المشروع
+
+* ✅ التوصية بكتب مخصصة بناءً على اهتمام المستخدم
+* ✅ تحليل مراجعات الكتب بلغة طبيعية
+* ✅ توليد أوصاف كتب تلقائيًا
+* ✅ محادثة دردشة مع "مساعد افتراضي للمكتبة"
+
+---
+
+## 📌 ملاحظات
+
+* لا تنس تفعيل الفوترة بحسابك في OpenRouter إذا كنت تستخدم نماذج مدفوعة.
+* يمكنك التبديل بين النماذج بسهولة فقط بتغيير `"model"` في جسم الطلب.
+* استخدم المتغيرات البيئية `.env` لحماية مفاتيحك بدلًا من تضمينها مباشرة في الكود.
+
+---
+
+## 🚀 التطوير المحلي
+
+### المتطلبات
+- Node.js & npm - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+### الخطوات
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# استنساخ المستودع
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# الانتقال إلى مجلد المشروع
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# تثبيت التبعيات
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# تشغيل خادم التطوير
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🛠️ التقنيات المستخدمة
 
-**Use GitHub Codespaces**
+- **Vite** - أداة بناء سريعة
+- **TypeScript** - لغة برمجة مع أنواع ثابتة
+- **React** - مكتبة واجهة المستخدم
+- **shadcn-ui** - مكونات واجهة مستخدم
+- **Tailwind CSS** - إطار عمل CSS
+- **OpenRouter** - منصة الذكاء الاصطناعي
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 🌐 النشر والمشاركة
 
-This project is built with:
+- **النشر**: افتح [Lovable](https://lovable.dev/projects/71aaa9f3-c071-41a7-9caa-6e104de096d7) واضغط Share → Publish
+- **دومين مخصص**: اذهب إلى Project > Settings > Domains
+- **GitHub**: اربط حسابك في GitHub لنقل الكود
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/71aaa9f3-c071-41a7-9caa-6e104de096d7) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+🧠 تم إعداد هذا المشروع لتوفير تجربة ذكية وقابلة للتخصيص لزوار مكتبتك الرقمية.
