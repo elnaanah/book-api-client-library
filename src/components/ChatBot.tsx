@@ -69,57 +69,90 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const callOpenRouter = async (userMessage: string, context: string): Promise<string> => {
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer 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',
+          'Content-Type': 'application/json',
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'مكتبة الكتب - مساعد ذكي'
+        },
+        body: JSON.stringify({
+          model: 'meta-llama/llama-3.1-8b-instruct:free',
+          messages: [
+            {
+              role: 'system',
+              content: `أنت مساعد ذكي لمكتبة إلكترونية تبيع الكتب العربية. مهمتك مساعدة العملاء في:
+1. البحث عن الكتب والمؤلفين
+2. تقديم معلومات عن الأسعار والفئات
+3. شرح عملية الشراء
+4. الإجابة على الاستفسارات العامة
+
+يجب أن تكون إجاباتك باللغة العربية، مفيدة، ومختصرة. استخدم المعلومات المتاحة من قاعدة البيانات عند الإجابة.
+
+البيانات المتاحة:
+${context}`
+            },
+            {
+              role: 'user',
+              content: userMessage
+            }
+          ],
+          max_tokens: 300,
+          temperature: 0.7
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0]?.message?.content || 'عذراً، لم أتمكن من معالجة طلبك. يرجى المحاولة مرة أخرى.';
+    } catch (error) {
+      console.error('Error calling OpenRouter:', error);
+      return 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.';
+    }
+  };
+
   const generateContextualResponse = async (userMessage: string): Promise<string> => {
     const lowerMessage = userMessage.toLowerCase();
+    let context = '';
     
-    // Handle book search
+    // Gather relevant context based on user message
     if (lowerMessage.includes('كتاب') || lowerMessage.includes('بحث') || lowerMessage.includes('أبحث')) {
       const searchTerm = userMessage.replace(/كتاب|بحث|أبحث|عن|في|ال/g, '').trim();
       if (searchTerm) {
         const books = await searchBooks(searchTerm);
         if (books.length > 0) {
-          const booksList = books.slice(0, 3).map(book => 
-            `📚 ${book.title}\n👤 المؤلف: ${book.author.name}\n💰 السعر: ${book.price} ر.س\n📂 الفئة: ${book.category.name}`
-          ).join('\n\n');
-          return `وجدت ${books.length} كتاب${books.length > 1 ? 'اً' : ''} يطابق بحثك:\n\n${booksList}${books.length > 3 ? '\n\nوالمزيد...' : ''}`;
-        } else {
-          return `عذراً، لم أجد أي كتب تطابق "${searchTerm}". يمكنك تجربة كلمات بحث مختلفة أو تصفح الفئات المتاحة.`;
+          context += `الكتب المتاحة التي تطابق البحث:\n`;
+          books.slice(0, 5).forEach(book => {
+            context += `- ${book.title} بواسطة ${book.author.name} - السعر: ${book.price} ر.س\n`;
+          });
         }
       }
     }
 
-    // Handle author queries
     if (lowerMessage.includes('مؤلف') || lowerMessage.includes('كاتب')) {
       const authors = await getAuthors();
-      const randomAuthors = authors.slice(0, 5);
-      const authorsList = randomAuthors.map(author => `✍️ ${author.name}`).join('\n');
-      return `إليك بعض المؤلفين المتاحين في مكتبتنا:\n\n${authorsList}\n\nيمكنك البحث عن أي مؤلف بالاسم للعثور على كتبه.`;
+      context += `المؤلفون المتاحون:\n`;
+      authors.slice(0, 10).forEach(author => {
+        context += `- ${author.name}\n`;
+      });
     }
 
-    // Handle category queries
-    if (lowerMessage.includes('فئة') || lowerMessage.includes('تصنيف') || lowerMessage.includes('قسم')) {
+    if (lowerMessage.includes('فئة') || lowerMessage.includes('تصنيف')) {
       const categories = await getCategories();
-      const categoriesList = categories.map(cat => `📁 ${cat.name}`).join('\n');
-      return `الفئات المتاحة في مكتبتنا:\n\n${categoriesList}\n\nيمكنك تصفح أي فئة للعثور على الكتب المناسبة.`;
+      context += `الفئات المتاحة:\n`;
+      categories.forEach(category => {
+        context += `- ${category.name}\n`;
+      });
     }
 
-    // Handle price queries
-    if (lowerMessage.includes('سعر') || lowerMessage.includes('تكلفة') || lowerMessage.includes('ثمن')) {
-      return 'أسعار الكتب في مكتبتنا تتراوح حسب نوع الكتاب ومؤلفه. يمكنك استخدام فلتر السعر في الصفحة الرئيسية لتحديد نطاق سعري معين، أو اسألني عن كتاب محدد لمعرفة سعره.';
-    }
-
-    // Handle help queries
-    if (lowerMessage.includes('مساعدة') || lowerMessage.includes('ساعد') || lowerMessage.includes('كيف')) {
-      return 'يمكنني مساعدتك في:\n\n🔍 البحث عن الكتب\n👤 معرفة معلومات المؤلفين\n📚 تصفح الفئات المختلفة\n💰 الاستفسار عن الأسعار\n🛒 شرح كيفية إتمام عملية الشراء\n\nما الذي تود معرفته؟';
-    }
-
-    // Handle ordering queries
-    if (lowerMessage.includes('طلب') || lowerMessage.includes('شراء') || lowerMessage.includes('سلة')) {
-      return 'لإتمام عملية الشراء:\n\n1️⃣ أضف الكتب المرغوبة إلى السلة بالنقر على "إضافة إلى السلة"\n2️⃣ انقر على أيقونة السلة في الأعلى\n3️⃣ راجع طلبك وأدخل اسمك\n4️⃣ اضغط "إرسال الطلب"\n\nسيتم مراجعة طلبك والرد عليك قريباً!';
-    }
-
-    // Default response
-    return 'شكراً لك على سؤالك! يمكنني مساعدتك في البحث عن الكتب، معرفة المؤلفين، أو تصفح الفئات. يمكنك أيضاً أن تسألني "مساعدة" لمعرفة كل ما يمكنني فعله لك.';
+    // Use OpenRouter API for intelligent response
+    return await callOpenRouter(userMessage, context);
   };
 
   const handleSendMessage = async () => {
