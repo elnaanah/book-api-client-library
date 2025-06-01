@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,28 +73,26 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
       const apiKey = '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';
       
       const payload = {
-        model: 'meta-llama/llama-3.1-8b-instruct:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
-            content: `You are an intelligent assistant for an Arabic online bookstore. Your role is to help customers with:
-1. Finding books and authors
-2. Providing information about prices and categories
-3. Explaining the purchase process
-4. Answering general inquiries
+            content: `أنت مساعد مخصص لمكتبة كتب ذكية. دورك هو مساعدة العملاء في:
+1. العثور على الكتب والمؤلفين
+2. تقديم معلومات حول الأسعار والفئات
+3. شرح عملية الشراء
+4. الإجابة على الاستفسارات العامة
 
-Your responses should be in Arabic, helpful, and concise. Use the available database information when answering.
+يجب أن تكون إجاباتك باللغة العربية، مفيدة، ومختصرة. استخدم المعلومات المتاحة من قاعدة البيانات عند الإجابة.
 
-Available data:
+البيانات المتاحة:
 ${context}`
           },
           {
             role: 'user',
             content: userMessage
           }
-        ],
-        max_tokens: 300,
-        temperature: 0.7
+        ]
       };
 
       console.log('Sending request to OpenRouter:', payload);
@@ -105,14 +102,13 @@ ${context}`
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://71aaa9f3-c071-41a7-9caa-6e104de096d7.lovableproject.com',
-          'X-Title': 'Book Store AI Assistant'
+          'HTTP-Referer': 'book-store.ai',
+          'X-Title': 'book_store_api_ai'
         },
         body: JSON.stringify(payload)
       });
 
       console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
 
       if (!response.ok) {
         const errorText = await response.text();
