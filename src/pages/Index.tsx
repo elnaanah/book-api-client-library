@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import BooksGrid from '@/components/BooksGrid';
 import BookDetails from '@/components/BookDetails';
 import FiltersSidebar from '@/components/FiltersSidebar';
+import ChatBotFab from '@/components/ChatBotFab';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Filter, Sparkles, Clock, TrendingUp } from 'lucide-react';
@@ -259,6 +260,9 @@ const Index = () => {
           open={isBookDetailsOpen}
           onOpenChange={setIsBookDetailsOpen}
         />
+
+        {/* Chat Bot */}
+        <ChatBotFab />
       </div>
     </CartProvider>
   );
