@@ -71,20 +71,14 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
 
   const callOpenRouter = async (userMessage: string, context: string): Promise<string> => {
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer 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',
-          'Content-Type': 'application/json',
-          'HTTP-Referer': window.location.origin,
-          'X-Title': 'Book Store AI Assistant'
-        },
-        body: JSON.stringify({
-          model: 'meta-llama/llama-3.1-8b-instruct:free',
-          messages: [
-            {
-              role: 'system',
-              content: `You are an intelligent assistant for an Arabic online bookstore. Your role is to help customers with:
+      const apiKey = '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';
+      
+      const payload = {
+        model: 'meta-llama/llama-3.1-8b-instruct:free',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an intelligent assistant for an Arabic online bookstore. Your role is to help customers with:
 1. Finding books and authors
 2. Providing information about prices and categories
 3. Explaining the purchase process
@@ -94,16 +88,31 @@ Your responses should be in Arabic, helpful, and concise. Use the available data
 
 Available data:
 ${context}`
-            },
-            {
-              role: 'user',
-              content: userMessage
-            }
-          ],
-          max_tokens: 300,
-          temperature: 0.7
-        })
+          },
+          {
+            role: 'user',
+            content: userMessage
+          }
+        ],
+        max_tokens: 300,
+        temperature: 0.7
+      };
+
+      console.log('Sending request to OpenRouter:', payload);
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://71aaa9f3-c071-41a7-9caa-6e104de096d7.lovableproject.com',
+          'X-Title': 'Book Store AI Assistant'
+        },
+        body: JSON.stringify(payload)
       });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
 
       if (!response.ok) {
         const errorText = await response.text();
