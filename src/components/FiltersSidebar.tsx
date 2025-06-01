@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Filter, RefreshCw } from 'lucide-react';
+import { X, Filter, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { apiService } from '@/services/api';
-import { Category, Author, BookFilters } from '@/types/api';
+import { Category, Author, Subcategory, BookFilters } from '@/types/api';
 
 interface FiltersSidebarProps {
   filters: BookFilters;
@@ -23,7 +24,9 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubcategoriesOpen, setIsSubcategoriesOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,11 +47,36 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
     fetchData();
   }, []);
 
+  // Fetch subcategories when a category is selected
+  useEffect(() => {
+    const fetchSubcategories = async () => {
+      if (filters.category) {
+        try {
+          const subcategoriesData = await apiService.getSubcategories(filters.category);
+          setSubcategories(subcategoriesData);
+          setIsSubcategoriesOpen(true);
+        } catch (error) {
+          console.error('Error fetching subcategories:', error);
+          setSubcategories([]);
+        }
+      } else {
+        setSubcategories([]);
+        setIsSubcategoriesOpen(false);
+      }
+    };
+
+    fetchSubcategories();
+  }, [filters.category]);
+
   const updateFilter = (key: keyof BookFilters, value: any) => {
-    onFiltersChange({
-      ...filters,
-      [key]: value,
-    });
+    const newFilters = { ...filters, [key]: value };
+    
+    // If category changes, clear subcategory filter
+    if (key === 'category') {
+      newFilters.subcategory = undefined;
+    }
+    
+    onFiltersChange(newFilters);
   };
 
   const clearFilters = () => {
@@ -169,6 +197,52 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Subcategories - Only show when a category is selected */}
+      {filters.category && subcategories.length > 0 && (
+        <Card>
+          <Collapsible open={isSubcategoriesOpen} onOpenChange={setIsSubcategoriesOpen}>
+            <CardHeader className="pb-3">
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center justify-between cursor-pointer">
+                  <CardTitle className="text-base">التصنيفات الفرعية</CardTitle>
+                  {isSubcategoriesOpen ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </div>
+              </CollapsibleTrigger>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {subcategories.map((subcategory) => (
+                    <div
+                      key={subcategory._id}
+                      className={`p-2 rounded cursor-pointer transition-colors ${
+                        filters.subcategory === subcategory._id
+                          ? 'bg-library-100 text-library-800'
+                          : 'hover:bg-gray-50'
+                      }`}
+                      onClick={() => updateFilter('subcategory', 
+                        filters.subcategory === subcategory._id ? undefined : subcategory._id
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">{subcategory.name}</span>
+                        {filters.subcategory === subcategory._id && (
+                          <X className="h-4 w-4" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
+      )}
 
       {/* Authors */}
       <Card>
