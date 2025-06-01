@@ -77,22 +77,22 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
           'Authorization': 'Bearer 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',
           'Content-Type': 'application/json',
           'HTTP-Referer': window.location.origin,
-          'X-Title': 'مكتبة الكتب - مساعد ذكي'
+          'X-Title': 'Book Store AI Assistant'
         },
         body: JSON.stringify({
           model: 'meta-llama/llama-3.1-8b-instruct:free',
           messages: [
             {
               role: 'system',
-              content: `أنت مساعد ذكي لمكتبة إلكترونية تبيع الكتب العربية. مهمتك مساعدة العملاء في:
-1. البحث عن الكتب والمؤلفين
-2. تقديم معلومات عن الأسعار والفئات
-3. شرح عملية الشراء
-4. الإجابة على الاستفسارات العامة
+              content: `You are an intelligent assistant for an Arabic online bookstore. Your role is to help customers with:
+1. Finding books and authors
+2. Providing information about prices and categories
+3. Explaining the purchase process
+4. Answering general inquiries
 
-يجب أن تكون إجاباتك باللغة العربية، مفيدة، ومختصرة. استخدم المعلومات المتاحة من قاعدة البيانات عند الإجابة.
+Your responses should be in Arabic, helpful, and concise. Use the available database information when answering.
 
-البيانات المتاحة:
+Available data:
 ${context}`
             },
             {
@@ -106,11 +106,20 @@ ${context}`
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('OpenRouter API Error:', response.status, errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      return data.choices[0]?.message?.content || 'عذراً، لم أتمكن من معالجة طلبك. يرجى المحاولة مرة أخرى.';
+      console.log('OpenRouter response:', data);
+      
+      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+        return data.choices[0].message.content || 'عذراً، لم أتمكن من معالجة طلبك. يرجى المحاولة مرة أخرى.';
+      } else {
+        console.error('Unexpected response format:', data);
+        return 'عذراً، لم أتمكن من معالجة طلبك. يرجى المحاولة مرة أخرى.';
+      }
     } catch (error) {
       console.error('Error calling OpenRouter:', error);
       return 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.';
